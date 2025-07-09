@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Body
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Body, status
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from auth import router as auth_router, get_current_user_sync
@@ -190,3 +190,13 @@ def comment_post(post_id: str, text: str = Body(...), user: dict = Depends(get_c
         return {"comments": updated_post.get("comments", [])}
     else:
         return {"comments": []}
+
+@app.delete("/api/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(post_id: str, user: dict = Depends(get_current_user_sync)):
+    post = posts.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if str(post["user_id"]) != str(user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
+    posts.delete_one({"_id": ObjectId(post_id)})
+    return

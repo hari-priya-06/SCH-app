@@ -30,6 +30,7 @@ export default function PostsList() {
   const [commentInputs, setCommentInputs] = useState({});
   const [liking, setLiking] = useState({});
   const [commenting, setCommenting] = useState({});
+  const [deleting, setDeleting] = useState({});
   const { theme } = useContext(DarkModeContext);
 
   useEffect(() => {
@@ -120,6 +121,17 @@ export default function PostsList() {
     setCommentInputs(inputs => ({ ...inputs, [postId]: "" }));
     refreshPosts();
     setCommenting(c => ({ ...c, [postId]: false }));
+  };
+
+  const handleDelete = async (postId) => {
+    setDeleting(d => ({ ...d, [postId]: true }));
+    const token = localStorage.getItem('token');
+    await fetch(`http://localhost:8000/api/posts/${postId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    refreshPosts();
+    setDeleting(d => ({ ...d, [postId]: false }));
   };
 
   // Responsive grid styles
@@ -221,6 +233,16 @@ export default function PostsList() {
             style={{ marginBottom: 8, background: theme.primary, color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
           >
             Expand
+          </button>
+        )}
+        {/* Delete button (only for post owner) */}
+        {user && String(post.user_id) === String(user._id) && (
+          <button
+            onClick={() => handleDelete(post._id)}
+            disabled={deleting[post._id]}
+            style={{ marginBottom: 8, background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', fontWeight: 600, cursor: deleting[post._id] ? 'not-allowed' : 'pointer', opacity: deleting[post._id] ? 0.7 : 1, transition: 'opacity 0.2s' }}
+          >
+            {deleting[post._id] ? 'Deleting...' : 'Delete'}
           </button>
         )}
         {/* Like and comment actions */}
