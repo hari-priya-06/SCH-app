@@ -34,7 +34,7 @@ export default function PostsList() {
   const { theme } = useContext(DarkModeContext);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/posts")
+    fetch("https://sch-backend-zmdn.onrender.com/api/posts")
       .then(res => res.json())
       .then(data => {
         setPosts(Array.isArray(data) ? data : data.posts || []);
@@ -44,7 +44,7 @@ export default function PostsList() {
 
   const refreshPosts = () => {
     setLoading(true);
-    fetch("http://localhost:8000/api/posts")
+    fetch("https://sch-backend-zmdn.onrender.com/api/posts")
       .then(res => res.json())
       .then(data => {
         setPosts(Array.isArray(data) ? data : data.posts || []);
@@ -63,7 +63,7 @@ export default function PostsList() {
     formData.append('content', content);
     formData.append('link', link);
     files.forEach(f => formData.append('files', f));
-    await fetch("http://localhost:8000/posts", {
+    await fetch("https://sch-backend-zmdn.onrender.com/posts", {
       method: "POST",
       headers: { 'Content-Type': 'multipart/form-data' },
       body: formData
@@ -73,7 +73,7 @@ export default function PostsList() {
     setLink("");
     setUploading(false);
     setLoading(true);
-    fetch("http://localhost:8000/api/posts")
+    fetch("https://sch-backend-zmdn.onrender.com/api/posts")
       .then(res => res.json())
       .then(data => {
         setPosts(Array.isArray(data) ? data : data.posts || []);
@@ -85,7 +85,7 @@ export default function PostsList() {
     console.log("Liking post", postId);
     setLiking(l => ({ ...l, [postId]: true }));
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:8000/api/posts/${postId}/like`, {
+    await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${postId}/like`, {
       method: "POST",
       headers: { 'Authorization': `Bearer ${token}` },
     });
@@ -95,12 +95,12 @@ export default function PostsList() {
 
   const handleSave = async (postId) => {
     setSaving(s => ({ ...s, [postId]: true }));
-    await fetch(`http://localhost:8000/posts/${postId}/save`, {
+    await fetch(`https://sch-backend-zmdn.onrender.com/posts/${postId}/save`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user?._id })
     });
-    fetch("http://localhost:8000/posts")
+    fetch("https://sch-backend-zmdn.onrender.com/posts")
       .then(res => res.json())
       .then(data => {
         setPosts(Array.isArray(data) ? data : data.posts || []);
@@ -113,7 +113,7 @@ export default function PostsList() {
     const text = commentInputs[postId];
     if (!text) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:8000/api/posts/${postId}/comment`, {
+    await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${postId}/comment`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ text })
@@ -126,7 +126,7 @@ export default function PostsList() {
   const handleDelete = async (postId) => {
     setDeleting(d => ({ ...d, [postId]: true }));
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:8000/api/posts/${postId}`, {
+    await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${postId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` },
     });

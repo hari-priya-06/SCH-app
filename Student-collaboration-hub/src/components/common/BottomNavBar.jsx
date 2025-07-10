@@ -76,7 +76,7 @@ export default function BottomNavBar() {
       data.append('tags', form.tags);
       if (form.file) data.append('file', form.file);
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8000/api/posts', {
+      const res = await fetch('https://sch-backend-zmdn.onrender.com/api/posts', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: data

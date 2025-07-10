@@ -15,7 +15,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/v1/users/me", {
+      const res = await fetch("https://sch-backend-zmdn.onrender.com/api/v1/users/me", {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -37,7 +37,7 @@ export default function Profile() {
     }
     try {
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:8000/api/v1/users/update", {
+      await fetch("https://sch-backend-zmdn.onrender.com/api/v1/users/update", {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',

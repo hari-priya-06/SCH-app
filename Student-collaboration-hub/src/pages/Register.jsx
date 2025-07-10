@@ -80,7 +80,7 @@ export default function Register() {
       <Card sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, boxShadow: 3, borderRadius: 4, p: 0, maxWidth: 900, width: '100%' }}>
         {/* Illustration */}
         <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#F3F6F8', p: { xs: 2, md: 4 } }}>
-          <img src="/illustrations/glassdoor-right.png" alt="Register" style={{ width: '100%', maxWidth: 340, height: 'auto' }} />
+          <img src="/illustration-login.png" alt="Register Illustration" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} />
         </Box>
         {/* Register Form */}
         <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

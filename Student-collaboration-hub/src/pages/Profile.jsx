@@ -21,7 +21,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (user && user._id) {
-      fetch(`http://localhost:8000/api/posts/user/${user._id}`)
+      fetch(`https://sch-backend-zmdn.onrender.com/api/posts/user/${user._id}`)
         .then(res => res.json())
         .then(data => setUserPosts(data))
         .catch(() => setUserPosts([]));
@@ -57,7 +57,7 @@ export default function Profile() {
       formData.append('file', file);
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('http://localhost:8000/api/auth/profile-picture', {
+        const res = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/profile-picture', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData
