@@ -19,9 +19,10 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [editModal, setEditModal] = useState({ open: false, post: null });
   const [editForm, setEditForm] = useState({ title: '', description: '', category: '', tags: '' });
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
-    fetch('https://sch-backend-zmdn.onrender.com/api/posts')
+    fetch(`${BACKEND_URL}/api/posts`)
       .then(res => res.json())
       .then(data => setPosts(data))
       .catch(() => setPosts([]));
@@ -39,7 +40,7 @@ export default function Home() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${postId}/like`, {
+      const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/like`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -69,7 +70,7 @@ export default function Home() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${postId}`, {
+      const res = await fetch(`${BACKEND_URL}/api/posts/${postId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -106,7 +107,7 @@ export default function Home() {
     formData.append('tags', editForm.tags);
     // File editing not supported in this modal for now
     try {
-      const res = await fetch(`https://sch-backend-zmdn.onrender.com/api/posts/${editModal.post._id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/posts/${editModal.post._id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

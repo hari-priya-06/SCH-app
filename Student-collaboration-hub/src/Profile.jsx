@@ -12,10 +12,12 @@ export default function Profile() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://sch-backend-zmdn.onrender.com/api/v1/users/me", {
+      const res = await fetch(`${BACKEND_URL}/api/v1/users/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -37,7 +39,7 @@ export default function Profile() {
     }
     try {
       const token = localStorage.getItem("token");
-      await fetch("https://sch-backend-zmdn.onrender.com/api/v1/users/update", {
+      await fetch(`${BACKEND_URL}/api/v1/users/update`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',

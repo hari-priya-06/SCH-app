@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { DarkModeContext } from "../theme";
 
 const departments = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "CHEM", "IT"];
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function Profile() {
   const { user, logout, setUser } = useAuth();
@@ -21,7 +22,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (user && user._id) {
-      fetch(`https://sch-backend-zmdn.onrender.com/api/posts/user/${user._id}`)
+      fetch(`${BACKEND_URL}/api/posts/user/${user._id}`)
         .then(res => res.json())
         .then(data => setUserPosts(data))
         .catch(() => setUserPosts([]));
@@ -57,7 +58,7 @@ export default function Profile() {
       formData.append('file', file);
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/profile-picture', {
+        const res = await fetch(`${BACKEND_URL}/api/auth/profile-picture`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData

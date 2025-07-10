@@ -11,6 +11,7 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -23,7 +24,7 @@ export default function Signup() {
     }
     setLoading(true);
     try {
-      const res = await fetch("https://sch-backend-zmdn.onrender.com/api/auth/signup", {
+      const res = await fetch(`${BACKEND_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)

@@ -15,6 +15,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
   // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -24,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       try {
         setUser(JSON.parse(savedUser));
         // Verify token with backend
-        fetch('https://sch-backend-zmdn.onrender.com/api/auth/me', {
+        fetch(`${BACKEND_URL}/api/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
           .then(res => res.json())
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      const response = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -70,7 +72,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', access_token);
 
       // Fetch user info
-      const userRes = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/me', {
+      const userRes = await fetch(`${BACKEND_URL}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${access_token}` }
       });
       const userData = await userRes.json();
@@ -88,7 +90,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setError(null);
-      const response = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/register', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -108,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('https://sch-backend-zmdn.onrender.com/api/auth/logout', {
+      await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
@@ -125,7 +127,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (profileData) => {
     try {
       setError(null);
-      const response = await fetch('https://sch-backend-zmdn.onrender.com/api/auth/profile', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -12,6 +12,7 @@ const allowedTypes = [
   "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 ];
 const maxSize = 20 * 1024 * 1024; // 20MB
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function BottomNavBar() {
   const [value, setValue] = useState(0);
@@ -76,7 +77,7 @@ export default function BottomNavBar() {
       data.append('tags', form.tags);
       if (form.file) data.append('file', form.file);
       const token = localStorage.getItem('token');
-      const res = await fetch('https://sch-backend-zmdn.onrender.com/api/posts', {
+      const res = await fetch(`${BACKEND_URL}/api/posts`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: data
