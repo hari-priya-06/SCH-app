@@ -50,8 +50,11 @@ export default function Login() {
         </Box>
         {/* Login Form */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 4 }}>
-          <Typography variant="h4" fontWeight={700} color="#1976d2" mb={2}>
-            Sign in
+          <Typography variant="h4" fontWeight={700} color="#1976d2" mb={0}>
+            Sign in to
+          </Typography>
+          <Typography variant="h2" fontWeight={900} color="#1976d2" mb={2} sx={{ lineHeight: 1.1 }}>
+            Student Hub
           </Typography>
           <form onSubmit={handleSubmit}>
             <TextField 
