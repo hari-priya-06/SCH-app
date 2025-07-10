@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Request, Body
+from fastapi import APIRouter, HTTPException, Depends, status, Request, Body, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
@@ -7,7 +7,7 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 import os
-import aiosmtplib
+import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
 from bson import ObjectId
@@ -118,6 +118,8 @@ def register(user: UserCreate):
 
 @router.post("/login", response_model=Token)
 def login(request: LoginRequest):
+    if not request.email or not request.password:
+        raise HTTPException(status_code=400, detail="Email and password are required")
     user = authenticate_user(request.email, request.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
@@ -169,9 +171,14 @@ def forgot_password(req: EmailRequest):
     message["To"] = user["email"]
     message["Subject"] = "Reset your Student Hub password"
     message.set_content(f"Click the link to reset your password: {reset_url}")
-    # Note: aiosmtplib is async, so this should be run in a background thread or replaced with a sync SMTP lib for full sync
-    import asyncio
-    asyncio.run(aiosmtplib.send(message, hostname="smtp.gmail.com", port=587, start_tls=True, username=EMAIL_USER, password=EMAIL_PASS))
+    if EMAIL_USER is None or EMAIL_PASS is None:
+        print("Error sending email: EMAIL_USER or EMAIL_PASS is not set")
+        # Optionally, raise HTTPException(status_code=500, detail="Email credentials not configured")
+    else:
+            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                server.starttls()
+                server.login(str(EMAIL_USER), str(EMAIL_PASS))
+                server.send_message(message)
     return {"message": "If this email is registered, a reset link has been sent."}
 
 class ResetPasswordRequest(BaseModel):
@@ -193,4 +200,22 @@ def reset_password(token: str, req: ResetPasswordRequest):
         users.update_one({"_id": user["_id"]}, {"$set": {"password": hashed_pw}})
         return {"message": "Password reset successful"}
     except JWTError:
-        raise HTTPException(status_code=400, detail="Invalid or expired token") 
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+@router.post("/profile-picture", response_model=UserOut)
+def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user_sync)
+):
+    import cloudinary.uploader
+    result = cloudinary.uploader.upload(file.file, resource_type="image", filename=file.filename)
+    url = result["secure_url"]
+    users.update_one({"_id": current_user["_id"]}, {"$set": {"profile_picture": url}})
+    user = get_user_by_id(current_user["_id"])
+    if user:
+        user["_id"] = str(user["_id"])
+        if "password" in user:
+            del user["password"]
+        return user
+    else:
+        raise HTTPException(status_code=404, detail="User not found") 

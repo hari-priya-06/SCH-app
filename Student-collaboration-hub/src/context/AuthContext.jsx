@@ -29,9 +29,9 @@ export const AuthProvider = ({ children }) => {
         })
           .then(res => res.json())
           .then(data => {
-            if (data.user) {
-              setUser(data.user);
-              localStorage.setItem('user', JSON.stringify(data.user));
+            if (data && !data.detail) {
+              setUser(data);
+              localStorage.setItem('user', JSON.stringify(data));
             } else {
               throw new Error();
             }
@@ -157,6 +157,7 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     clearError,
     isAuthenticated: !!user,
+    setUser,
   };
 
   return (

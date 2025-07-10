@@ -1,12 +1,10 @@
 fastapi
 uvicorn
-motor
+pymongo
 python-dotenv
 passlib[bcrypt]
 python-jose
 aiosmtplib
 email-validator
-pydantic 
-sqlalchemy
-psycopg2-binary
-cloudinary 
+pydantic
+cloudinary

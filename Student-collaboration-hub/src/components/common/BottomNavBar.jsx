@@ -99,20 +99,22 @@ export default function BottomNavBar() {
     <>
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1200 }} elevation={6}>
         <BottomNavigation
-          showLabels={false}
+          showlabel={false}
           value={value}
           onChange={(_, newValue) => handleNav(newValue)}
           sx={{ height: 64, bgcolor: '#fff', borderTop: '1px solid #eee' }}
         >
-          <BottomNavigationAction icon={<HomeIcon />} />
-          <BottomNavigationAction icon={<PeopleIcon />} />
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', top: -24 }}>
-            <Fab color="primary" aria-label="post" onClick={() => setOpen(true)} sx={{ width: 56, height: 56, boxShadow: 3 }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', position: 'relative', top: 8 }}>
+            <span style={{ fontWeight: 600, fontSize: 16, color: '#1976d2', marginBottom: 4 }}>create</span>
+            <Box
+              onClick={() => setOpen(true)}
+              sx={{ width: 56, height: 56, backgroundColor: '#1976d2', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 2, boxShadow: 3, cursor: 'pointer', marginBottom: 4 }}
+              aria-label="post"
+            >
               <AddCircleIcon sx={{ fontSize: 36 }} />
-            </Fab>
+            </Box>
+            <span style={{ fontWeight: 600, fontSize: 16, color: '#1976d2', marginBottom: 4 }}>post</span>
           </Box>
-          <BottomNavigationAction icon={<NotificationsIcon />} />
-          <BottomNavigationAction icon={<WorkIcon />} />
         </BottomNavigation>
       </Paper>
       <Modal open={open} onClose={() => setOpen(false)}>

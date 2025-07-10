@@ -40,15 +40,19 @@ export default function Login() {
   const handlePasswordVisibility = () => setShowPassword((show) => !show);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: theme.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: theme.background, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      {/* Top left Study Hub title */}
+      {/* Main content */}
       <Card sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, boxShadow: 3, borderRadius: 4, p: 0, maxWidth: 900, width: '100%' }}>
         {/* Illustration */}
         <Box sx={{ flex: 1, minHeight: { xs: 180, md: 420 }, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: theme.background, p: { xs: 2, md: 4 }, boxShadow: { md: '2px 0 8px 0 rgba(0,0,0,0.03)' }, position: 'relative', overflow: 'hidden' }}>
           <img src="/login_image.png" alt="Login" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
         </Box>
         {/* Login Form */}
-        <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Typography variant="h4" color={theme.primary} fontWeight={700} mb={2}>Sign in to Student Hub</Typography>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: 4 }}>
+          <Typography variant="h4" fontWeight={700} color="#1976d2" mb={2}>
+            Sign in
+          </Typography>
           <form onSubmit={handleSubmit}>
             <TextField 
               label="Email" 

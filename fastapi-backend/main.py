@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Body, status
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Body, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from auth import router as auth_router, get_current_user_sync
@@ -86,16 +86,17 @@ def post_to_dict(post):
                 comment["user_id"] = oid(comment["user_id"])
             if "created_at" in comment and hasattr(comment["created_at"], 'isoformat'):
                 comment["created_at"] = comment["created_at"].isoformat()
-    # Add user info
-    user = users.find_one({"_id": ObjectId(post["user_id"])})
-    if user:
-        post["user_name"] = user.get("name", "Unknown")
-        post["user_email"] = user.get("email", "")
-        post["user_department"] = user.get("department", "")
-    else:
-        post["user_name"] = "Unknown"
-        post["user_email"] = ""
-        post["user_department"] = ""
+    # Add user info only if not present
+    if not post.get("user_name") or not post.get("user_email"):
+        user = users.find_one({"_id": ObjectId(post["user_id"])});
+        if user:
+            post["user_name"] = user.get("name", "Unknown")
+            post["user_email"] = user.get("email", "")
+            post["user_department"] = user.get("department", "")
+        else:
+            post["user_name"] = "Unknown"
+            post["user_email"] = ""
+            post["user_department"] = ""
     return post
 
 @app.post("/api/posts", response_model=PostOut)
@@ -134,7 +135,9 @@ def create_post(
         "original_name": original_name,
         "created_at": datetime.utcnow(),
         "likes": [],  # list of user IDs
-        "comments": []  # list of comment objects
+        "comments": [],  # list of comment objects
+        "user_name": current_user.get("name", "Unknown"),
+        "user_email": current_user.get("email", "")
     }
     res = posts.insert_one(post_doc)
     post_doc["_id"] = res.inserted_id
@@ -190,6 +193,44 @@ def comment_post(post_id: str, text: str = Body(...), user: dict = Depends(get_c
         return {"comments": updated_post.get("comments", [])}
     else:
         return {"comments": []}
+
+@app.put("/api/posts/{post_id}", response_model=PostOut)
+def update_post(
+    post_id: str,
+    title: str = Form(...),
+    description: str = Form(""),
+    category: str = Form(...),
+    tags: str = Form(""),
+    file: UploadFile = File(None),
+    current_user: dict = Depends(get_current_user_sync)
+):
+    post = posts.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if str(post["user_id"]) != str(current_user["_id"]):
+        raise HTTPException(status_code=403, detail="Not authorized to edit this post")
+    update_fields = {
+        "title": title,
+        "description": description,
+        "category": category,
+        "tags": [t.strip() for t in tags.split(",") if t.strip()],
+    }
+    if file:
+        import cloudinary.uploader
+        if file.content_type == "application/pdf":
+            result = cloudinary.uploader.upload(file.file, resource_type="raw", filename=file.filename)
+            update_fields["file_type"] = "pdf"
+        elif file.content_type and file.content_type.startswith("image/"):
+            result = cloudinary.uploader.upload(file.file, resource_type="image", filename=file.filename)
+            update_fields["file_type"] = file.content_type.split("/")[1]
+        else:
+            result = cloudinary.uploader.upload(file.file, resource_type="auto", filename=file.filename)
+            update_fields["file_type"] = file.content_type if file.content_type else None
+        update_fields["file_url"] = result["secure_url"]
+        update_fields["original_name"] = file.filename
+    posts.update_one({"_id": ObjectId(post_id)}, {"$set": update_fields})
+    updated_post = posts.find_one({"_id": ObjectId(post_id)})
+    return post_to_dict(updated_post)
 
 @app.delete("/api/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: str, user: dict = Depends(get_current_user_sync)):

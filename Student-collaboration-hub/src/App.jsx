@@ -1,7 +1,7 @@
 // If you haven't already, run: npm install react-dom@18
 // If you haven't already, run: npm install react-router-dom
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Box, CssBaseline, CircularProgress } from "@mui/material";
 import Navbar from "./components/common/Navbar";
 import Home from "./pages/Home";
@@ -12,46 +12,33 @@ import PostsList from "./PostsList";
 import BottomNavBar from "./components/common/BottomNavBar";
 import { DarkModeContext, getTheme } from "./theme";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import HomeInfo from "./pages/HomeInfo";
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
-  return user ? children : <Navigate to="/login" replace />;
-};
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, loading, navigate]);
+  if (loading) return null;
+  return isAuthenticated ? children : null;
+}
 
 // Public Route Component (redirects to home if already logged in)
-const PublicRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-  
-  return user ? <Navigate to="/" replace /> : children;
-};
+function PublicRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/home");
+    }
+  }, [isAuthenticated, loading, navigate]);
+  if (loading) return null;
+  return !isAuthenticated ? children : null;
+}
 
 function AppContent() {
   const { user } = useAuth();
@@ -75,31 +62,12 @@ function AppContent() {
             }}
           >
             <Routes>
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              } />
-              <Route path="/posts" element={
-                <ProtectedRoute>
-                  <PostsList />
-                </ProtectedRoute>
-              } />
-              <Route path="/login" element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              } />
-              <Route path="/register" element={
-                <PublicRoute>
-                  <Register />
-                </PublicRoute>
-              } />
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="/home" element={<ProtectedRoute><HomeInfo /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/posts" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             {user && <BottomNavBar />}

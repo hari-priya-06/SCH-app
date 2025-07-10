@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { DarkModeContext } from "../../theme";
 import { Box, Typography, Button } from "@mui/material";
@@ -7,6 +7,7 @@ import { Box, Typography, Button } from "@mui/material";
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { theme } = useContext(DarkModeContext);
+  const location = useLocation();
   return (
     <Box
       component="nav"
@@ -47,7 +48,10 @@ export default function Navbar() {
       {/* Navigation Links */}
       <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, md: 2 } }}>
         {user && (
-          <Button component={Link} to="/" sx={{ color: "white", fontWeight: 500 }}>Home</Button>
+          <Button component={Link} to="/home" sx={{ color: "white", fontWeight: 500 }}>Home</Button>
+        )}
+        {user && (
+          <Button component={Link} to="/posts" sx={{ color: "white", fontWeight: 500 }}>Posts</Button>
         )}
         {user && (
           <Button component={Link} to="/profile" sx={{ color: "white", fontWeight: 500 }}>Profile</Button>

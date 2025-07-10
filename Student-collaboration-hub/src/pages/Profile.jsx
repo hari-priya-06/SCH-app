@@ -1,5 +1,5 @@
-import React, { useState, useRef, useContext } from "react";
-import { Box, Card, Typography, Avatar, Button, IconButton, Menu, MenuItem, Switch, Divider, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
+import React, { useState, useRef, useContext, useEffect } from "react";
+import { Box, Card, Typography, Avatar, Button, IconButton, Menu, MenuItem, Switch, Divider, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Chip, CardContent } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,13 +10,23 @@ import { DarkModeContext } from "../theme";
 const departments = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "CHEM", "IT"];
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const { theme, darkMode, setDarkMode } = useContext(DarkModeContext);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem("profilePic") || "");
+  const [profilePic, setProfilePic] = useState(user?.profile_picture || "");
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: user?.name || "", email: user?.email || "", department: user?.department || "" });
   const fileInputRef = useRef();
+  const [userPosts, setUserPosts] = useState([]);
+
+  useEffect(() => {
+    if (user && user._id) {
+      fetch(`http://localhost:8000/api/posts/user/${user._id}`)
+        .then(res => res.json())
+        .then(data => setUserPosts(data))
+        .catch(() => setUserPosts([]));
+    }
+  }, [user]);
 
   if (!user) return <Typography>Loading...</Typography>;
 
@@ -40,15 +50,25 @@ export default function Profile() {
     localStorage.setItem("darkMode", e.target.checked);
   };
 
-  const handleProfilePicChange = (e) => {
+  const handleProfilePicChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setProfilePic(ev.target.result);
-        localStorage.setItem("profilePic", ev.target.result);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('http://localhost:8000/api/auth/profile-picture', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        if (res.ok) {
+          const updatedUser = await res.json();
+          setProfilePic(updatedUser.profile_picture);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          if (setUser) setUser(updatedUser);
+        }
+      } catch {}
     }
   };
 
@@ -81,12 +101,10 @@ export default function Profile() {
         </Menu>
         <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={handleProfilePicChange} />
         <IconButton onClick={() => fileInputRef.current.click()} sx={{ mb: 2, mt: 4 }}>
-          <Avatar src={profilePic} sx={{ width: 100, height: 100, bgcolor: "#90caf9" }} />
+          <Avatar src={profilePic || user?.profile_picture} sx={{ width: 100, height: 100, bgcolor: "#90caf9" }} />
         </IconButton>
         {profilePic && (
-          <Button variant="outlined" color="error" sx={{ mb: 2 }} onClick={() => { setProfilePic(""); localStorage.removeItem("profilePic"); }}>
-            Remove Profile Picture
-          </Button>
+          <Button variant="outlined" color="error" sx={{ mb: 2 }} onClick={() => setProfilePic("")}>Remove Profile Picture</Button>
         )}
         <Typography variant="h6" sx={{ mt: 1 }}>{user.name || user.email.split("@")[0]}</Typography>
         <Typography variant="body2" color={theme.secondaryText}>
@@ -98,6 +116,43 @@ export default function Profile() {
         <Button variant="contained" startIcon={<EditIcon />} sx={{ mt: 2, background: theme.primary }} onClick={handleEditProfile}>
           Edit Profile
         </Button>
+        <Divider sx={{ my: 3, width: "100%" }} />
+        <Box sx={{ width: '100%' }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>My Posts</Typography>
+          {userPosts.length === 0 ? (
+            <Typography color={theme.secondaryText}>No posts yet.</Typography>
+          ) : (
+            <Box sx={{ display: 'grid', gap: 2 }}>
+              {userPosts.map(post => (
+                <Card key={post._id} sx={{ background: theme.cardBackground, color: theme.text, borderRadius: 3, boxShadow: '0 4px 16px #0001', border: `1px solid ${theme.border}` }}>
+                  <CardContent>
+                    <Typography fontWeight={700} fontSize={17}>{post.title}</Typography>
+                    <Typography fontSize={14} color={theme.secondaryText}>{post.category} • {new Date(post.created_at).toLocaleDateString()}</Typography>
+                    <Typography variant="body2" color={theme.secondaryText} sx={{ mb: 1 }}>{post.description}</Typography>
+                    {post.tags && post.tags.length > 0 && (
+                      <Box sx={{ mb: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {post.tags.map((tag, idx) => <Chip key={post._id + '-' + tag + '-' + idx} label={tag} size="small" />)}
+                      </Box>
+                    )}
+                    {post.file_url && (
+                      <Box sx={{ mb: 2 }}>
+                        {post.file_type && post.file_type.startsWith('image') && (
+                          <img src={post.file_url} alt="preview" style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 8 }} />
+                        )}
+                        {post.file_type && post.file_type === 'pdf' && (
+                          <a href={post.file_url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                        )}
+                        {post.file_type && post.file_type.startsWith('video') && (
+                          <video src={post.file_url} controls style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 8 }} />
+                        )}
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+        </Box>
         <Divider sx={{ my: 3, width: "100%" }} />
         <Box sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}>
           <Typography>Dark Mode</Typography>
